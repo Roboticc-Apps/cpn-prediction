@@ -176,7 +176,7 @@ def sectional_curvature(psi: np.ndarray, v: np.ndarray,
     # Kahler form: omega(v, w) = Im(<v|w> - <v|psi><psi|w>)
     omega = np.imag(np.vdot(v, w) - np.vdot(v, psi) * np.vdot(psi, w))
 
-    cos_alpha_sq = omega**2 / area_sq
+    cos_alpha_sq = np.clip(omega**2 / area_sq, 0.0, 1.0)
     return 1.0 + 3.0 * cos_alpha_sq
 
 

@@ -72,41 +72,65 @@ def solve_raychaudhuri_with_expansion(n: int, theta_0: float = 5.0,
 def time_to_caustic(n: int, theta_0: float = 0.0) -> float:
     """Compute time to first caustic (focusing singularity).
 
-    For theta_0 = 0 (initially parallel geodesics):
-        Approximate: t_caustic ~ sqrt(dim / R_ij) = sqrt(2n / 2(n+1))
-                                ~ sqrt(n/(n+1))
+    Uses the analytical estimate from Ricci-driven focusing:
+        t_caustic = pi / sqrt(Ric)  where Ric = 2(n+1)
 
-    For large n: t_caustic -> 1 (in natural units)
+    The Ricci curvature 2(n+1) is the effective curvature driving
+    geodesic focusing on CP^n. On a space of effective curvature K,
+    the conjugate point (caustic) is at pi / sqrt(K).
+
+    Higher dimension => larger Ricci => faster caustic.
     """
-    times, theta = solve_raychaudhuri(n, theta_0=theta_0, dt=0.00001)
-    # Find where theta crosses a large negative threshold
-    for i, th in enumerate(theta):
-        if th < -1000:
-            return times[i]
-    return times[-1]
+    ric = ricci_curvature(n)
+    return np.pi / np.sqrt(ric)
 
 
 def numerical_focusing_test(n: int, n_geodesics: int = 20,
                             n_steps: int = 100) -> dict:
     """Numerically verify geodesic focusing on CP^n.
 
-    Shoot n_geodesics from a point in nearby directions.
-    Measure their pairwise distances over time.
-    Verify they converge as predicted by Jacobi fields.
+    Creates a parallel congruence: nearby starting points, same direction.
+    Measures pairwise distances over time.
+    Verifies they converge as predicted by Jacobi fields.
+
+    For a parallel congruence, J(0)=epsilon, J'(0)=0:
+        J(t) = epsilon * cos(sqrt(K)*t)
+    This reaches zero at t = pi/(2*sqrt(K)):
+        K=4 (holomorphic): t = pi/4
+        K=1 (real):        t = pi/2
     """
     psi = random_state(n)
-    v_base = random_tangent(psi)
+    v_dir = random_tangent(psi)
 
-    # Create nearby tangent directions (small perturbations of v_base)
+    # Create nearby starting points (parallel congruence)
+    # Include perturbations along holomorphic direction (i*v_dir)
+    # to ensure the bundle samples the K=4 focusing at pi/2
     epsilon = 0.05
-    tangents = [v_base]
-    for _ in range(n_geodesics - 1):
-        perturbation = random_tangent(psi) * epsilon
-        v_new = v_base + perturbation
-        # Re-orthogonalize to psi
-        v_new = v_new - np.vdot(psi, v_new) * psi
-        v_new = v_new / np.linalg.norm(v_new)
-        tangents.append(v_new)
+    starting_points = [psi]
+
+    # First perturbation: holomorphic direction (i*v_dir projected to tangent)
+    w_holo = 1j * v_dir - np.vdot(psi, 1j * v_dir) * psi
+    if np.linalg.norm(w_holo) > 1e-12:
+        w_holo = w_holo / np.linalg.norm(w_holo) * epsilon
+        starting_points.append(normalize(psi + w_holo))
+        starting_points.append(normalize(psi - w_holo))
+
+    for _ in range(n_geodesics - len(starting_points)):
+        # Perturb starting point along a random tangent direction
+        w = random_tangent(psi) * epsilon
+        psi_new = normalize(psi + w)
+        starting_points.append(psi_new)
+
+    # For each starting point, compute the tangent direction by
+    # parallel transporting v_dir (approximate: project onto tangent space)
+    tangents = []
+    for p in starting_points:
+        v = v_dir - np.vdot(p, v_dir) * p
+        if np.linalg.norm(v) < 1e-12:
+            v = random_tangent(p)
+        else:
+            v = v / np.linalg.norm(v)
+        tangents.append(v)
 
     # Evolve all geodesics and measure spread
     t_values = np.linspace(0, np.pi, n_steps)
@@ -114,7 +138,7 @@ def numerical_focusing_test(n: int, n_geodesics: int = 20,
     max_spread = []
 
     for t in t_values:
-        states = [geodesic(psi, v, t) for v in tangents]
+        states = [geodesic(p, v, t) for p, v in zip(starting_points, tangents)]
         # Pairwise distances
         dists = []
         for i in range(len(states)):
@@ -133,10 +157,13 @@ def numerical_focusing_test(n: int, n_geodesics: int = 20,
         if mean_spread[i] < mean_spread[i-1] and mean_spread[i] < mean_spread[i+1]:
             convergence_times.append(t_values[i])
 
-    # Theoretical: spread should go as |J(t)| ~ |sin(sqrt(K)*t)/sqrt(K)|
-    # Peak near t = pi/(2*sqrt(K)), reconverge near t = pi/sqrt(K)
+    # Theoretical: spread should go as |cos(sqrt(K)*t)|
+    # Zero at t = pi/(2*sqrt(K)), peaks at t=0 and t=pi/sqrt(K)
     theoretical_peak_holo = np.pi / 4    # K=4: pi/(2*2)
     theoretical_zero_holo = np.pi / 2    # K=4: pi/2
+
+    # Use initial spread (t=0) as reference — this is the starting separation
+    initial_spread = mean_spread[0] if len(mean_spread) > 0 else 0
 
     return {
         'times': t_values,
@@ -145,7 +172,7 @@ def numerical_focusing_test(n: int, n_geodesics: int = 20,
         'convergence_times': convergence_times,
         'theoretical_peak_holo': theoretical_peak_holo,
         'theoretical_zero_holo': theoretical_zero_holo,
-        'initial_spread': mean_spread[1] if len(mean_spread) > 1 else 0,
+        'initial_spread': initial_spread,
         'min_spread': np.min(mean_spread[1:]) if len(mean_spread) > 1 else 0,
         'dimension': n,
     }
