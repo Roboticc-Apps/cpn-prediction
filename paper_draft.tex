@@ -71,6 +71,8 @@ The state space of a $q$-qubit quantum system is the complex projective space $\
 \end{align}
 The curvature is strictly positive everywhere. $\mathbb{CP}^n$ is an Einstein manifold: the Ricci tensor is proportional to the metric.
 
+\textit{Normalization convention:} Throughout this paper we use the standard normalization $K_H = 4$ for the Fubini-Study metric on $\mathbb{CP}^n$ \cite{kobayashi1969,bengtsson2006}. Under this convention, sectional curvatures satisfy $K \in [1,4]$ and the Ricci tensor takes the form (\ref{eq:ricci}). Some references use the rescaled metric with $K_H = 1$, which gives $R_{ij} = \tfrac{1}{2}(n+1)\,g_{ij}$; care must be taken when comparing formulas across conventions.
+
 \subsection{The Bures Metric on Density Matrices}
 
 Mixed quantum states are described by density matrices $\rho$ (positive semidefinite, unit trace). The space of density matrices inherits a Riemannian structure from the Bures metric \cite{bures1969,hubner1992}:
@@ -106,7 +108,7 @@ For an initially parallel geodesic congruence ($\theta_0 = 0$, $\sigma = \omega 
 \end{proposition}
 
 \begin{proof}
-For an initially parallel congruence, $\theta_0 = 0$ and $\sigma = \omega = 0$ at $t = 0$. From (\ref{eq:raychaudhuri}) and (\ref{eq:ricci}):
+For an initially parallel congruence, $\theta_0 = 0$ and $\sigma = \omega = 0$ at $t = 0$. The assumption $\sigma = \omega = 0$ is conservative: shear ($\sigma^2 \geq 0$) can only accelerate focusing, and vorticity can always be eliminated by choosing a hypersurface-orthogonal congruence. From (\ref{eq:raychaudhuri}) and (\ref{eq:ricci}):
 \[
 \left.\frac{d\theta}{dt}\right|_{t=0} = -\frac{1}{2n-1} \cdot 0 - 0 + 0 - R_{ij}u^i u^j = -2(n+1)
 \]
@@ -428,6 +430,8 @@ Prediction (1) is immediately testable with existing hardware and requires only 
 
 The Bures metric on quantum state space was introduced by Bures \cite{bures1969} and developed in the quantum information context by H\"ubner \cite{hubner1992}. The geometry of $\mathbb{CP}^n$ as quantum state space is treated comprehensively by Bengtsson and \.Zyczkowski \cite{bengtsson2006}. The Raychaudhuri equation, originally derived in the context of general relativity \cite{raychaudhuri1955}, applies to any Riemannian manifold with positive Ricci curvature.
 
+The focusing result (Theorem~\ref{thm:focusing}) is closely related to the classical Bonnet-Myers theorem \cite{bonnetmyers}, which guarantees that any complete Riemannian manifold with Ricci curvature bounded below by $(D-1)\kappa > 0$ has diameter at most $\pi/\sqrt{\kappa}$, and consequently that all geodesics have conjugate points. Our contribution is not the existence of focusing---which follows from Bonnet-Myers on any positively curved manifold---but rather the explicit, quantitative formula connecting the focusing rate to qubit count, and the demonstration that this has practical consequences for quantum computing calibration.
+
 The Riemannian mean on manifolds of positive definite matrices has been studied by Moakher \cite{moakher2005} and Bhatia et al.\ \cite{bhatia2019}. The application to quantum state estimation appears to be new: while the Bures metric is well-known in quantum information theory, its use as a replacement for Euclidean averaging in calibration pipelines, and the quantitative prediction of the scaling advantage via geodesic focusing, have not been previously reported.
 
 % ============================================================
@@ -505,6 +509,10 @@ M.~Moakher, ``A differential geometric approach to the geometric mean of symmetr
 R.~Bhatia, T.~Jain, and Y.~Lim, ``On the Bures--Wasserstein distance between positive definite matrices,''
 \textit{Expo.\ Math.}\ \textbf{37}, 165--191 (2019).
 
+\bibitem{bonnetmyers}
+S.~B.~Myers, ``Riemannian manifolds with positive mean curvature,''
+\textit{Duke Math.\ J.}\ \textbf{8}, 401--404 (1941).
+
 \bibitem{shor1994}
 P.~W.~Shor, ``Algorithms for quantum computation: Discrete logarithms and factoring,''
 in \textit{Proc.\ 35th Annual Symposium on Foundations of Computer Science} (IEEE, 1994), pp.~124--134.
@@ -526,5 +534,9 @@ A.~M.~Steane, ``Error correcting codes in quantum theory,''
 \textit{Phys.\ Rev.\ Lett.}\ \textbf{77}, 793--797 (1996).
 
 \end{thebibliography}
+
+\section*{License}
+
+This work is licensed under CC BY-NC 4.0 (Creative Commons Attribution-NonCommercial). Free for academic and research use. Commercial use requires a license from Roboticc Pty Ltd.
 
 \end{document}
