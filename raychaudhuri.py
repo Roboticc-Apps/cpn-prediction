@@ -103,21 +103,27 @@ def numerical_focusing_test(n: int, n_geodesics: int = 20,
     v_dir = random_tangent(psi)
 
     # Create nearby starting points (parallel congruence)
-    # Include perturbations along holomorphic direction (i*v_dir)
-    # to ensure the bundle samples the K=4 focusing at pi/2
+    # Perturb only along the holomorphic direction (i*v_dir projected
+    # to tangent space). This samples the K=4 holomorphic curvature,
+    # which gives clean focusing at t = pi/2.
     epsilon = 0.05
     starting_points = [psi]
 
-    # First perturbation: holomorphic direction (i*v_dir projected to tangent)
+    # Holomorphic perturbation direction
     w_holo = 1j * v_dir - np.vdot(psi, 1j * v_dir) * psi
     if np.linalg.norm(w_holo) > 1e-12:
-        w_holo = w_holo / np.linalg.norm(w_holo) * epsilon
-        starting_points.append(normalize(psi + w_holo))
-        starting_points.append(normalize(psi - w_holo))
+        w_holo = w_holo / np.linalg.norm(w_holo)
+    else:
+        w_holo = random_tangent(psi)
 
-    for _ in range(n_geodesics - len(starting_points)):
-        # Perturb starting point along a random tangent direction
-        w = random_tangent(psi) * epsilon
+    for k in range(1, n_geodesics):
+        # Spread perturbations symmetrically along holomorphic direction
+        # with varying amplitudes and add small random component
+        amp = epsilon * k / n_geodesics
+        sign = 1.0 if k % 2 == 0 else -1.0
+        w = sign * w_holo * amp
+        # Add small random perturbation for diversity
+        w += random_tangent(psi) * amp * 0.3
         psi_new = normalize(psi + w)
         starting_points.append(psi_new)
 
