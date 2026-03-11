@@ -9,6 +9,10 @@ Connects the geodesic focusing theory to:
 This is the test suite for the second paper.
 """
 
+import sys, io
+if sys.stdout.encoding and sys.stdout.encoding.lower().replace("-", "") != "utf8":
+    sys.stdout = io.TextIOWrapper(sys.stdout.buffer, encoding="utf-8", errors="replace")
+
 import numpy as np
 from cpn_geodesic import (
     normalize, random_state, random_tangent, geodesic,

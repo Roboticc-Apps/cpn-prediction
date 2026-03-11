@@ -13,8 +13,13 @@ import os
 from pathlib import Path
 from calibration import bures_mean, euclidean_mean, fidelity
 
-# Path to the first paper's hardware data
-HARDWARE_DIR = Path(r"D:\development\python\geometry-consciousness\quantum_geometry\hardware_runs")
+# Path to the hardware data from Paper 1 (cpn-unification repo)
+# Clone https://github.com/Roboticc-Apps/cpn-unification and set this path,
+# or set the CPN_HARDWARE_DIR environment variable.
+HARDWARE_DIR = Path(os.environ.get(
+    "CPN_HARDWARE_DIR",
+    Path(__file__).parent.parent / "cpn-unification" / "hardware_runs"
+))
 
 
 def load_bell_batches(shots: int = 8192) -> list[np.ndarray]:
@@ -118,7 +123,8 @@ def validate_against_hardware():
     # Check data exists
     if not HARDWARE_DIR.exists():
         print(f"\nERROR: Hardware data directory not found: {HARDWARE_DIR}")
-        print("Expected data from geometry-consciousness repo.")
+        print("Clone https://github.com/Roboticc-Apps/cpn-unification alongside this repo,")
+        print("or set CPN_HARDWARE_DIR to point to its hardware_runs/ directory.")
         return False
 
     all_pass = True

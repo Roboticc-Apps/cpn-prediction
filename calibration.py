@@ -105,7 +105,7 @@ def bures_distance(rho: np.ndarray, sigma: np.ndarray) -> float:
 def _matrix_sqrt(A: np.ndarray) -> np.ndarray:
     """Matrix square root via eigendecomposition.
 
-    Ported from geometry-consciousness/quantum_geometry/framework.py (line 289-293).
+    Matrix square root via eigendecomposition.
     Clamps eigenvalues to 0 (not reg) — regularization is applied upstream.
     """
     eigvals, eigvecs = np.linalg.eigh(A)
