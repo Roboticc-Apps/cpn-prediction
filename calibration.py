@@ -102,15 +102,19 @@ def bures_distance(rho: np.ndarray, sigma: np.ndarray) -> float:
     return np.sqrt(max(0, 2 - 2 * np.sqrt(fidelity)))
 
 
-def _matrix_sqrt(A: np.ndarray, reg: float = 1e-10) -> np.ndarray:
-    """Matrix square root via eigendecomposition (numerically stable)."""
+def _matrix_sqrt(A: np.ndarray) -> np.ndarray:
+    """Matrix square root via eigendecomposition.
+
+    Ported from geometry-consciousness/quantum_geometry/framework.py (line 289-293).
+    Clamps eigenvalues to 0 (not reg) — regularization is applied upstream.
+    """
     eigvals, eigvecs = np.linalg.eigh(A)
-    eigvals = np.maximum(eigvals, reg)
+    eigvals = np.maximum(eigvals, 0)
     return eigvecs @ np.diag(np.sqrt(eigvals)) @ eigvecs.conj().T
 
 
 def bures_mean(density_matrices: list[np.ndarray],
-               max_iter: int = 100,
+               max_iter: int = 50,
                tol: float = 1e-8,
                reg: float = 1e-10) -> np.ndarray:
     """Compute the Bures (Fréchet/Riemannian) mean of density matrices.
@@ -118,7 +122,7 @@ def bures_mean(density_matrices: list[np.ndarray],
     The Bures mean minimizes sum of squared Bures distances:
         mean = argmin_X sum_i d_B(X, rho_i)^2
 
-    Algorithm: fixed-point iteration.
+    Algorithm: fixed-point iteration (ported from framework.py density_bures_mean).
         S = (1/N) sum_i (mean^{-1/2} rho_i mean^{-1/2})^{1/2}
         mean_new = mean^{1/2} S^2 mean^{1/2}
 
@@ -132,8 +136,6 @@ def bures_mean(density_matrices: list[np.ndarray],
     mean = sum(density_matrices) / N + reg * np.eye(dim)
 
     for iteration in range(max_iter):
-        prev = mean.copy()
-
         # Eigen-decompose mean for sqrt and inv_sqrt
         eigvals, eigvecs = np.linalg.eigh(mean)
         eigvals = np.maximum(eigvals, reg)
@@ -148,16 +150,17 @@ def bures_mean(density_matrices: list[np.ndarray],
         S /= N
 
         # Key formula: mean_new = sqrt_mean @ S^2 @ sqrt_mean
-        mean = sqrt_mean @ S @ S @ sqrt_mean
+        new_mean = sqrt_mean @ S @ S @ sqrt_mean
 
         # Normalize trace
-        tr = np.real(np.trace(mean))
+        tr = np.real(np.trace(new_mean))
         if tr > 0:
-            mean = mean / tr
+            new_mean = new_mean / tr
 
-        # Convergence
-        if np.linalg.norm(mean - prev) < tol:
-            break
+        # Convergence check
+        if np.linalg.norm(new_mean - mean) < tol:
+            return new_mean
+        mean = new_mean
 
     return mean
 

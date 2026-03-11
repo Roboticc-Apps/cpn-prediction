@@ -29,13 +29,19 @@ def load_bell_batches(shots: int = 8192) -> list[np.ndarray]:
         with open(f, 'r') as fp:
             data = json.load(fp)
 
-        # Extract density matrix
-        rho_data = data.get('rho_real') or data.get('rho')
-        if rho_data is None:
-            continue
+        # Extract density matrix (real + imaginary parts)
+        rho_real = data.get('rho_real')
+        rho_imag = data.get('rho_imag')
+        if rho_real is None:
+            rho_data = data.get('rho')
+            if rho_data is None:
+                continue
+            rho = np.array(rho_data, dtype=complex)
+        else:
+            rho = np.array(rho_real, dtype=complex)
+            if rho_imag is not None:
+                rho = rho + 1j * np.array(rho_imag)
 
-        # Convert nested list to numpy array
-        rho = np.array(rho_data, dtype=complex)
         if rho.shape[0] == rho.shape[1]:
             # Normalize trace
             rho = rho / np.trace(rho)
@@ -53,11 +59,19 @@ def load_ghz_batches(shots: int = 8192) -> list[np.ndarray]:
         with open(f, 'r') as fp:
             data = json.load(fp)
 
-        rho_data = data.get('rho_real') or data.get('rho')
-        if rho_data is None:
-            continue
+        # Extract density matrix (real + imaginary parts)
+        rho_real = data.get('rho_real')
+        rho_imag = data.get('rho_imag')
+        if rho_real is None:
+            rho_data = data.get('rho')
+            if rho_data is None:
+                continue
+            rho = np.array(rho_data, dtype=complex)
+        else:
+            rho = np.array(rho_real, dtype=complex)
+            if rho_imag is not None:
+                rho = rho + 1j * np.array(rho_imag)
 
-        rho = np.array(rho_data, dtype=complex)
         if rho.shape[0] == rho.shape[1]:
             rho = rho / np.trace(rho)
             matrices.append(rho)
