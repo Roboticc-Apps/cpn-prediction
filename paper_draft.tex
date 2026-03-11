@@ -17,6 +17,7 @@
 \newtheorem{corollary}{Corollary}
 \newtheorem{lemma}{Lemma}
 \newtheorem{definition}{Definition}
+\newtheorem{conjecture}{Conjecture}
 
 \title{Geodesic Focusing on $\mathbb{CP}^n$ and the Quantum Computing Scaling Ceiling:\\
 Why Euclidean Calibration Fails Exponentially}
@@ -142,7 +143,7 @@ Qubits $q$ & Space & Real dim & Focusing rate $|d\theta/dt|$ \\
 5 & $\mathbb{CP}^{31}$ & 62 & 64 \\
 10 & $\mathbb{CP}^{1023}$ & 2046 & 2{,}048 \\
 20 & $\mathbb{CP}^{1048575}$ & $2 \times 10^6$ & $2 \times 10^6$ \\
-50 & $\mathbb{CP}^{10^{15}-1}$ & $2 \times 10^{15}$ & $2 \times 10^{15}$ \\
+50 & $\mathbb{CP}^{2^{50}-1}$ & $2 \times 10^{15}$ & $2 \times 10^{15}$ \\
 \bottomrule
 \end{tabular}
 \caption{Geodesic focusing rate on $\mathbb{CP}^n$ for $q$-qubit systems. The rate doubles per qubit and scales as $2^{q+1}$.}
@@ -256,14 +257,14 @@ The per-iteration cost is $O(N d^3)$ where $d = 2^q$ is the Hilbert space dimens
 
 \subsection{Quantitative Error Scaling}
 
-\begin{theorem}[Euclidean error scaling]
+\begin{conjecture}[Euclidean error scaling]
 \label{thm:scaling}
-The systematic error introduced by Euclidean averaging on the state space of a $q$-qubit system scales as $\Omega(2^q)$ with qubit count. Specifically, the fidelity gain from Bures correction satisfies:
+The systematic error introduced by Euclidean averaging on the state space of a $q$-qubit system scales approximately as $2^q$ with qubit count. Simulation and hardware data are consistent with:
 \begin{equation}
     \Delta F = F_{\text{Bures}} - F_{\text{Euc}} \propto 2^q
 \end{equation}
 anchored to the experimentally measured value $\Delta F = +1.332\%$ at $q = 3$.
-\end{theorem}
+\end{conjecture}
 
 The scaling is driven by the Ricci curvature $R_{ij} = 2(n+1)\,g_{ij}$: the volume of the manifold that is poorly approximated by flat geometry grows with curvature, which grows with dimension.
 
@@ -292,7 +293,7 @@ The gain ratio between successive qubit counts is:
 \toprule
 Transition & Gain ratio & Focusing rate ratio \\
 \midrule
-$2q/1q$ & $4.85\times$ & $2.0\times$ \\
+$2q/1q$ & $4.83\times$ & $2.0\times$ \\
 $3q/2q$ & $2.96\times$ & $2.0\times$ \\
 $4q/3q$ & $1.98\times$ & $2.0\times$ \\
 $5q/4q$ & $1.18\times$ & $2.0\times$ \\
@@ -300,7 +301,7 @@ $5q/4q$ & $1.18\times$ & $2.0\times$ \\
 \end{tabular}
 \end{center}
 
-The measured gain ratio approaches $2\times$ at higher qubit counts (the $4q/3q$ ratio of $1.98\times$ is nearly exact), consistent with the doubling of the focusing rate. The initial super-doubling ($4.85\times$ at $2q/1q$) occurs because the 1-qubit manifold ($\mathbb{CP}^1$, the Bloch sphere) is low-dimensional, and the sub-doubling at $5q/4q$ reflects saturation effects as Euclidean fidelity approaches the random-guessing floor.
+The measured gain ratio approaches $2\times$ at higher qubit counts (the $4q/3q$ ratio of $1.98\times$ is nearly exact), consistent with the doubling of the focusing rate. The initial super-doubling ($4.83\times$ at $2q/1q$) occurs because the 1-qubit manifold ($\mathbb{CP}^1$, the Bloch sphere) is low-dimensional, and the sub-doubling at $5q/4q$ reflects saturation effects as Euclidean fidelity approaches the random-guessing floor.
 
 \subsection{Critical Thresholds and Extrapolation}
 
@@ -383,7 +384,7 @@ This has practical implications: quantum computers operating at low shot counts 
 
 The exponential growth of Euclidean calibration error creates a \textit{scaling ceiling}: a qubit count above which the geometric error dominates all other noise sources. Below the ceiling ($\lesssim$5 qubits), hardware noise dominates and the geometric error is a small perturbation. Above the ceiling ($\gtrsim$10 qubits), the geometric error exceeds $100\%$ and no hardware improvement can compensate.
 
-This provides a parsimonious explanation for the empirical observation that quantum computers demonstrate quantum effects at small scale but fail to deliver sustained quantum advantage at larger scales. The scaling ceiling is a mathematical obstruction, not an engineering limitation.
+This geometric error is an additional factor---alongside decoherence, gate errors, and crosstalk---that contributes to the difficulty of scaling quantum advantage. Unlike those engineering challenges, the scaling ceiling is a mathematical obstruction inherent to the state space geometry.
 
 \subsection{Impact on Quantum Error Correction}
 
@@ -402,7 +403,7 @@ The correction is a software modification to the calibration pipeline:
 
 The computational overhead is modest: the Bures mean algorithm converges in $\sim$20--50 iterations, with per-iteration cost $O(Nd^3)$ comparable to existing MLE methods. For $d \leq 2^{10} = 1024$ (10 qubits), this is tractable on classical hardware.
 
-The Bures correction is complementary to, not redundant with, maximum likelihood estimation. In \cite{muir2026}, combining MLE reconstruction with Bures averaging (MLE+Bures) outperformed both MLE alone and Bures alone in all tested configurations.
+The Bures correction is complementary to, not redundant with, maximum likelihood estimation. In \cite{muir2026}, combining MLE reconstruction with Bures averaging (MLE+Bures) outperformed or matched both MLE alone and Bures alone in all tested configurations.
 
 % ============================================================
 \section{Predictions}
@@ -454,7 +455,7 @@ We acknowledge the use of IBM Quantum services, specifically the ibm\_fez proces
 
 \bibitem{muir2026}
 N.~Muir, ``Geometric unification of quantum mechanics and general relativity on complex projective space,''
-Australian Patent Application 2026901876 (2026); arXiv:XXXX.XXXXX.
+Australian Patent Application 2026901876 (2026).
 
 \bibitem{raychaudhuri1955}
 A.~Raychaudhuri, ``Relativistic cosmology. I,''
