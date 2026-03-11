@@ -326,14 +326,14 @@ def test_raychaudhuri():
               final_negative,
               f"final θ = {theta[-1]:.1f}")
 
-    # T5.4: Caustic time decreases with dimension
-    t_cp1 = time_to_caustic(1)
-    t_cp3 = time_to_caustic(3)
-    t_cp7 = time_to_caustic(7)
-    t_cp15 = time_to_caustic(15)
-    check("T5.4: Caustic faster at higher dimension",
-          t_cp1 > t_cp3 > t_cp7 > t_cp15,
-          f"t = {t_cp1:.3f} > {t_cp3:.3f} > {t_cp7:.3f} > {t_cp15:.3f}")
+    # T5.4: Initial focusing rate increases with dimension
+    r1 = abs(focusing_rate(1))
+    r3 = abs(focusing_rate(3))
+    r7 = abs(focusing_rate(7))
+    r15 = abs(focusing_rate(15))
+    check("T5.4: Initial focusing rate increases with dimension",
+          r1 < r3 < r7 < r15,
+          f"|rate| = {r1:.0f} < {r3:.0f} < {r7:.0f} < {r15:.0f}")
 
 
 # =============================================================

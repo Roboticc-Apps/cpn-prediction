@@ -82,12 +82,12 @@ For pure states $\rho = \ket{\psi}\bra{\psi}$ and $\sigma = \ket{\phi}\bra{\phi}
 
 \subsection{The Raychaudhuri Equation}
 
-On a Riemannian manifold, the Raychaudhuri equation \cite{raychaudhuri1955} governs the evolution of the expansion scalar $\theta$ of a geodesic congruence:
+On a Riemannian manifold of dimension $D$, the Raychaudhuri equation \cite{raychaudhuri1955} governs the evolution of the expansion scalar $\theta$ of a geodesic congruence:
 \begin{equation}
-    \frac{d\theta}{dt} = -\frac{1}{d}\theta^2 - \sigma_{ab}\sigma^{ab} + \omega_{ab}\omega^{ab} - R_{ij}u^i u^j
+    \frac{d\theta}{dt} = -\frac{1}{D-1}\theta^2 - \sigma_{ab}\sigma^{ab} + \omega_{ab}\omega^{ab} - R_{ij}u^i u^j
     \label{eq:raychaudhuri}
 \end{equation}
-where $d = 2n$ is the real dimension, $\sigma_{ab}$ is the shear tensor, $\omega_{ab}$ is the vorticity tensor, and $u^i$ is the unit tangent vector to the geodesic.
+where $D-1$ is the dimension of the transverse (screen) space orthogonal to the geodesic, $\sigma_{ab}$ is the shear tensor, $\omega_{ab}$ is the vorticity tensor, and $u^i$ is the unit tangent vector. For $\mathbb{CP}^n$ with real dimension $D = 2n$, the screen space has dimension $2n - 1$.
 
 % ============================================================
 \section{Geodesic Focusing on $\mathbb{CP}^n$}
@@ -108,7 +108,7 @@ For an initially parallel geodesic congruence ($\theta_0 = 0$, $\sigma = \omega 
 \begin{proof}
 For an initially parallel congruence, $\theta_0 = 0$ and $\sigma = \omega = 0$ at $t = 0$. From (\ref{eq:raychaudhuri}) and (\ref{eq:ricci}):
 \[
-\left.\frac{d\theta}{dt}\right|_{t=0} = -\frac{1}{2n} \cdot 0 - 0 + 0 - R_{ij}u^i u^j = -2(n+1)
+\left.\frac{d\theta}{dt}\right|_{t=0} = -\frac{1}{2n-1} \cdot 0 - 0 + 0 - R_{ij}u^i u^j = -2(n+1)
 \]
 since $R_{ij}u^i u^j = 2(n+1)\,g_{ij}u^i u^j = 2(n+1)$ for any unit tangent vector.
 \end{proof}
@@ -157,21 +157,19 @@ On $\mathbb{CP}^n$ with $n \geq 1$, every geodesic congruence reaches a caustic 
 \end{theorem}
 
 \begin{proof}
-Consider the Raychaudhuri equation (\ref{eq:raychaudhuri}) with $\sigma = \omega = 0$ (irrotational, shear-free congruence). Set $\lambda = 2(n+1)$ for the Ricci term. Then:
+Consider the Raychaudhuri equation (\ref{eq:raychaudhuri}) with $\sigma = \omega = 0$ (irrotational, shear-free congruence). Set $a = 1/(2n-1)$ and $\lambda = 2(n+1)$. Then:
 \begin{equation}
-    \frac{d\theta}{dt} = -\frac{1}{2n}\theta^2 - \lambda
+    \frac{d\theta}{dt} = -a\,\theta^2 - \lambda
     \label{eq:ray_simple}
 \end{equation}
 
-\textit{Case 1:} $\theta_0 \leq 0$. The right-hand side of (\ref{eq:ray_simple}) is strictly negative (both terms $\leq 0$, with $-\lambda < 0$ always). So $\theta$ is strictly decreasing. Since $d\theta/dt \leq -\lambda < 0$, we have $\theta(t) \leq \theta_0 - \lambda t \to -\infty$.
+\textit{Case 1:} $\theta_0 \leq 0$. Both terms on the right-hand side are $\leq 0$ (with $-\lambda < 0$ always), so $d\theta/dt < 0$. Since $d\theta/dt \leq -\lambda$, we have $\theta(t) \leq \theta_0 - \lambda t$. Once $\theta < 0$, the quadratic feedback $-a\theta^2$ accelerates the decrease, producing a finite-time singularity via the Riccati mechanism.
 
-\textit{Case 2:} $\theta_0 > 0$. The equation $d\theta/dt = -\theta^2/(2n) - \lambda$ has the property that $d\theta/dt < 0$ whenever $\theta^2 > 2n\lambda$, i.e., $|\theta| > \sqrt{2n\lambda}$. For $\theta_0 > \sqrt{2n\lambda}$, $d\theta/dt < 0$ immediately.
+\textit{Case 2:} $\theta_0 > 0$. Since $-a\theta^2 < 0$ for all $\theta \neq 0$, we have $d\theta/dt = -a\theta^2 - \lambda < -\lambda < 0$. So $\theta(t) < \theta_0 - \lambda t$, and $\theta$ reaches zero before time $t_0 = \theta_0/\lambda$. After that, Case 1 applies.
 
-For any $\theta_0 > 0$, consider the comparison equation $d\theta/dt = -\lambda$ (dropping the $-\theta^2/(2n)$ term when $\theta > 0$). This gives $\theta(t) \leq \theta_0 - \lambda t$, so $\theta$ reaches zero by time $t_0 \leq \theta_0/\lambda$. After that, Case 1 applies.
-
-In both cases, $\theta \to -\infty$ in finite time. The caustic time is bounded by:
+In both cases, $\theta \to -\infty$ in finite time. The exact Riccati solution from $\theta = 0$ is $\theta(t) = -\sqrt{\lambda/a}\,\tan(\sqrt{a\lambda}\,t)$, which diverges at $t^* = \pi/(2\sqrt{a\lambda})$. The total caustic time is bounded by:
 \begin{equation}
-    t_{\text{caustic}} \leq \frac{\theta_0}{\lambda} + \frac{\pi}{\sqrt{\lambda}} = \frac{\theta_0}{2(n+1)} + \frac{\pi}{\sqrt{2(n+1)}}
+    t_{\text{caustic}} \leq \frac{\theta_0}{\lambda} + \frac{\pi}{2\sqrt{a\lambda}} = \frac{\theta_0}{2(n+1)} + \frac{\pi}{2}\sqrt{\frac{2n-1}{2(n+1)}} < \frac{\theta_0}{2(n+1)} + \frac{\pi}{2}
 \end{equation}
 \end{proof}
 
@@ -185,13 +183,13 @@ Initial expansion $\theta_0$ & Time to $\theta = 0$ & Bound $\theta_0/\lambda$ \
 \midrule
 0 & 0.000 & 0.000 \\
 5 & 0.301 & 0.313 \\
-10 & 0.551 & 0.625 \\
-20 & 0.868 & 1.250 \\
-50 & 1.197 & 3.125 \\
-100 & 1.330 & 6.250 \\
+10 & 0.546 & 0.625 \\
+20 & 0.853 & 1.250 \\
+50 & 1.163 & 3.125 \\
+100 & 1.286 & 6.250 \\
 \bottomrule
 \end{tabular}
-\caption{Time to contraction ($\theta = 0$) for initially expanding congruences on $\mathbb{CP}^7$ ($\lambda = 16$). The quadratic term $-\theta^2/(2n)$ accelerates contraction beyond the linear bound, making the actual contraction time significantly shorter than the bound for large $\theta_0$.}
+\caption{Time to contraction ($\theta = 0$) for initially expanding congruences on $\mathbb{CP}^7$ ($\lambda = 16$, $a = 1/13$). The quadratic term $-a\theta^2$ accelerates contraction beyond the linear bound $\theta_0/\lambda$, making the actual contraction time significantly shorter than the bound for large $\theta_0$.}
 \label{tab:expansion}
 \end{table}
 

@@ -19,7 +19,7 @@ Patent: Australian Patent Application 2026901876 (March 8, 2026)
 """
 
 import numpy as np
-from scipy.linalg import sqrtm, inv
+from scipy.linalg import sqrtm
 from cpn_geodesic import focusing_rate
 
 

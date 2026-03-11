@@ -267,10 +267,10 @@ def raychaudhuri_evolution(n: int, t_max: float = np.pi / 2,
                            theta_0: float = 0.0) -> tuple:
     """Solve the Raychaudhuri equation on CP^n.
 
-    d(theta)/dt = -(1/(2n)) * theta^2 - sigma^2 + omega^2 - R_{ij}u^i u^j
+    d(theta)/dt = -(1/(2n-1)) * theta^2 - sigma^2 + omega^2 - R_{ij}u^i u^j
 
     For a geodesic congruence (sigma = omega = 0 initially):
-        d(theta)/dt = -(1/(2n)) * theta^2 - 2(n+1)
+        d(theta)/dt = -(1/(2n-1)) * theta^2 - 2(n+1)
 
     theta < 0 means focusing (convergence).
     theta -> -inf means caustic (focal point).
@@ -284,11 +284,12 @@ def raychaudhuri_evolution(n: int, t_max: float = np.pi / 2,
     times = np.zeros(n_steps + 1)
     theta = np.zeros(n_steps + 1)
     theta[0] = theta_0
+    screen_dim = dim - 1  # Transverse (screen) space dimension = 2n - 1
 
     for i in range(n_steps):
         times[i + 1] = times[i] + dt
-        # Raychaudhuri: d(theta)/dt = -(1/dim)*theta^2 - ric
-        dtheta = -(1.0 / dim) * theta[i]**2 - ric
+        # Raychaudhuri: d(theta)/dt = -(1/(d-1))*theta^2 - ric
+        dtheta = -(1.0 / screen_dim) * theta[i]**2 - ric
         theta[i + 1] = theta[i] + dtheta * dt
 
         # Stop if theta diverges (caustic reached)

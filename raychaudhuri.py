@@ -25,15 +25,17 @@ def solve_raychaudhuri(n: int, theta_0: float = 0.0,
                        dt: float = 0.0001) -> tuple:
     """Solve Raychaudhuri equation on CP^n.
 
-    d(theta)/dt = -(1/dim) * theta^2 - R_{ij}u^i u^j
+    d(theta)/dt = -(1/(dim-1)) * theta^2 - R_{ij}u^i u^j
 
-    where dim = 2n (real dimension), R_{ij}u^i u^j = 2(n+1).
+    where dim = 2n (real dimension), dim-1 = 2n-1 (screen space),
+    R_{ij}u^i u^j = 2(n+1).
 
     theta > 0: expansion (geodesics diverging)
     theta < 0: contraction (geodesics converging)
     theta -> -inf: caustic (focal point reached)
     """
     dim = 2 * n
+    screen_dim = dim - 1  # Transverse (screen) space dimension = 2n - 1
     ric = ricci_curvature(n)
 
     times = [0.0]
@@ -43,7 +45,7 @@ def solve_raychaudhuri(n: int, theta_0: float = 0.0,
     th = theta_0
 
     while t < t_max:
-        dth = -(1.0 / dim) * th**2 - ric
+        dth = -(1.0 / screen_dim) * th**2 - ric
         th += dth * dt
         t += dt
 
@@ -70,19 +72,27 @@ def solve_raychaudhuri_with_expansion(n: int, theta_0: float = 5.0,
 
 
 def time_to_caustic(n: int, theta_0: float = 0.0) -> float:
-    """Compute time to first caustic (focusing singularity).
+    """Compute time to first caustic (focusing singularity) from theta_0.
 
-    Uses the analytical estimate from Ricci-driven focusing:
-        t_caustic = pi / sqrt(Ric)  where Ric = 2(n+1)
+    From the Riccati ODE: d(theta)/dt = -a*theta^2 - b
+    where a = 1/(2n-1), b = 2(n+1).
 
-    The Ricci curvature 2(n+1) is the effective curvature driving
-    geodesic focusing on CP^n. On a space of effective curvature K,
-    the conjugate point (caustic) is at pi / sqrt(K).
+    Solution from theta_0 = 0: theta(t) = -sqrt(b/a) * tan(sqrt(ab) * t)
+    Blow-up at t* = pi / (2*sqrt(ab))
 
-    Higher dimension => larger Ricci => faster caustic.
+    For theta_0 > 0: add theta_0/b (time for theta to reach 0).
     """
-    ric = ricci_curvature(n)
-    return np.pi / np.sqrt(ric)
+    dim = 2 * n
+    a = 1.0 / (dim - 1)     # 1/(2n-1), screen space coefficient
+    b = ricci_curvature(n)   # 2(n+1), Ricci driving term
+
+    # Time from theta=0 to caustic (Riccati blow-up)
+    t_from_zero = np.pi / (2.0 * np.sqrt(a * b))
+
+    # Time from theta_0 > 0 to theta=0 (upper bound: theta_0 / b)
+    t_to_zero = max(0.0, theta_0) / b
+
+    return t_to_zero + t_from_zero
 
 
 def numerical_focusing_test(n: int, n_geodesics: int = 20,
