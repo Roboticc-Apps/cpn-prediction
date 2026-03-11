@@ -102,69 +102,64 @@ def bures_distance(rho: np.ndarray, sigma: np.ndarray) -> float:
     return np.sqrt(max(0, 2 - 2 * np.sqrt(fidelity)))
 
 
+def _matrix_sqrt(A: np.ndarray, reg: float = 1e-10) -> np.ndarray:
+    """Matrix square root via eigendecomposition (numerically stable)."""
+    eigvals, eigvecs = np.linalg.eigh(A)
+    eigvals = np.maximum(eigvals, reg)
+    return eigvecs @ np.diag(np.sqrt(eigvals)) @ eigvecs.conj().T
+
+
 def bures_mean(density_matrices: list[np.ndarray],
                max_iter: int = 100,
-               tol: float = 1e-10) -> np.ndarray:
+               tol: float = 1e-8,
+               reg: float = 1e-10) -> np.ndarray:
     """Compute the Bures (Fréchet/Riemannian) mean of density matrices.
 
     The Bures mean minimizes sum of squared Bures distances:
         mean = argmin_X sum_i d_B(X, rho_i)^2
 
-    Algorithm: iterative fixed-point (Alvarez-Esteban et al.)
-        X_{k+1} = (1/N) sum_i S_i X_k S_i^dag
-        where S_i = (X_k^{1/2} rho_i X_k^{1/2})^{1/2} X_k^{-1/2}
+    Algorithm: fixed-point iteration.
+        S = (1/N) sum_i (mean^{-1/2} rho_i mean^{-1/2})^{1/2}
+        mean_new = mean^{1/2} S^2 mean^{1/2}
 
-    Simplified: use the mean iteration
-        X_{k+1} = (1/N) sum_i (X_k # rho_i)
-    where # is the matrix geometric mean.
+    Uses eigendecomposition (not scipy.sqrtm) for numerical stability
+    with near-singular density matrices from real hardware.
     """
     N = len(density_matrices)
     dim = density_matrices[0].shape[0]
 
-    # Initialize with Euclidean mean
-    X = sum(density_matrices) / N
-
-    # Ensure positive definite
-    eigvals = np.linalg.eigvalsh(X)
-    if np.min(eigvals) < 1e-12:
-        X += np.eye(dim) * 1e-10
+    # Initialize with Euclidean mean + regularization
+    mean = sum(density_matrices) / N + reg * np.eye(dim)
 
     for iteration in range(max_iter):
-        X_prev = X.copy()
+        prev = mean.copy()
 
-        # Compute sqrt and inv_sqrt of X
-        sqrt_X = sqrtm(X)
-        try:
-            inv_sqrt_X = inv(sqrt_X)
-        except np.linalg.LinAlgError:
-            break
+        # Eigen-decompose mean for sqrt and inv_sqrt
+        eigvals, eigvecs = np.linalg.eigh(mean)
+        eigvals = np.maximum(eigvals, reg)
+        sqrt_mean = eigvecs @ np.diag(np.sqrt(eigvals)) @ eigvecs.conj().T
+        inv_sqrt_mean = eigvecs @ np.diag(1.0 / np.sqrt(eigvals)) @ eigvecs.conj().T
 
-        # Fixed point iteration
-        S = np.zeros_like(X)
+        # Accumulate S = (1/N) sum_i sqrt(inv_sqrt_mean @ rho_i @ inv_sqrt_mean)
+        S = np.zeros_like(mean)
         for rho in density_matrices:
-            # Matrix geometric mean: X # rho = X^{1/2} (X^{-1/2} rho X^{-1/2})^{1/2} X^{1/2}
-            inner = inv_sqrt_X @ rho @ inv_sqrt_X
-            sqrt_inner = sqrtm(inner)
-            geo_mean = sqrt_X @ sqrt_inner @ sqrt_X
-            S += geo_mean
+            inner = inv_sqrt_mean @ (rho + reg * np.eye(dim)) @ inv_sqrt_mean
+            S += _matrix_sqrt(inner)
+        S /= N
 
-        X_new = S / N
-
-        # Ensure Hermitian and positive
-        X_new = (X_new + X_new.conj().T) / 2
-        eigvals = np.linalg.eigvalsh(X_new)
-        if np.min(eigvals) < 0:
-            X_new += np.eye(dim) * (abs(np.min(eigvals)) + 1e-12)
+        # Key formula: mean_new = sqrt_mean @ S^2 @ sqrt_mean
+        mean = sqrt_mean @ S @ S @ sqrt_mean
 
         # Normalize trace
-        X = X_new / np.trace(X_new)
+        tr = np.real(np.trace(mean))
+        if tr > 0:
+            mean = mean / tr
 
-        # Convergence check
-        diff = np.linalg.norm(X - X_prev)
-        if diff < tol:
+        # Convergence
+        if np.linalg.norm(mean - prev) < tol:
             break
 
-    return X
+    return mean
 
 
 def euclidean_mean(density_matrices: list[np.ndarray]) -> np.ndarray:
